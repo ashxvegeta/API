@@ -14,9 +14,11 @@ switch ($method) {
            $result = $connection->query("SELECT * FROM users WHERE id = $id"); 
            $data = $result->fetch_assoc();
            if($data){
+            http_response_code(200); // OK
               echo json_encode($data);
            }else {
             # code...
+            http_response_code(404);
                 echo json_encode(["message"=>"User not found"]);
            }
         //    // Sample JSON data to be sent in the body of the request
@@ -67,8 +69,10 @@ switch ($method) {
         $stmt->bind_param("ssi",$name,$email,$age);
         $stmt->execute();
         if($stmt->affected_rows> 0){
+           http_response_code(201);
            echo json_encode(["message"=>"User created successfully"]);
         }else{
+            http_response_code(400); 
             echo json_encode(["message"=>"User not created"]);
         }
 
@@ -125,8 +129,10 @@ switch ($method) {
         $stmt->bind_param("ssii",$name,$email,$age,$id);
         $stmt->execute();
         if($stmt->affected_rows>0){
+            http_response_code(200);
           echo json_encode(["message"=>"User updated successfully"]);
         }else{
+            http_response_code(400);
            echo json_encode(["message"=>"User not updated"]);
         }
         $stmt->close();
@@ -148,8 +154,10 @@ switch ($method) {
         $stmt->bind_param("i",$id);
         $stmt->execute();
         if($stmt->affected_rows >0){
+            http_response_code(200);
            echo json_encode(["message"=>"user deleted successfully"]);
         }else{
+            http_response_code(404);
               echo json_encode(["message"=>"user not deleted"]);
         }
         $stmt->close();

@@ -19,8 +19,13 @@ switch ($method) {
             # code...
                 echo json_encode(["message"=>"User not found"]);
            }
+        //    // Sample JSON data to be sent in the body of the request
+        //    // http://localhost/PHP_API/api.php?id=5
 
         }else{
+
+            // Fetch all users
+            //http://localhost/PHP_API/api.php
             $result = $connection->query("SELECT * FROM users");
             $users = array();
             while ($row = $result->fetch_assoc()) {
@@ -36,39 +41,66 @@ switch ($method) {
         $name = $input['name'];
         $email = $input['email'];
         $age = $input['age'];
-        $connection->query("INSERT INTO users (name, email, age) VALUES ('$name', '$email', '$age')");
-        if($connection->affected_rows > 0){
-        echo json_encode(["message"=>"User created successfully"]);
+        $stmt = $connection->prepare("INSERT INTO users(name,email,age) VALUES(?,?,?)");
+        $stmt->bind_param("ssi",$name,$email,$age);
+        $stmt->execute();
+        if($stmt->affected_rows> 0){
+           echo json_encode(["message"=>"User created successfully"]);
         }else{
             echo json_encode(["message"=>"User not created"]);
         }
-            # code...
-    break;
-    
-    
+
+        $stmt->close();
+        break;
+        # code...
+        // Sample JSON data to be sent in the body of the request
+        // {
+        //     "name": "GeeksforGeeks2",
+        //     "email": "geek@geeksforgeeks.com",
+        //     "age": 27
+        // }
+
     case 'PUT':
         $id  =  $_GET['id'];
         $name = $input['name'];
         $email = $input['email'];
         $age = $input['age'];
-        $connection->query("UPDATE users SET name = '$name', email = '$email', age = '$age' WHERE id = $id");
-        if($connection->affected_rows > 0){
-            echo json_encode(["message"=>"User updated successfully"]);
+        $stmt = $connection->prepare("UPDATE users set name=?,email=?,age=? WHERE id = ?");
+        $stmt->bind_param("ssii",$name,$email,$age,$id);
+        $stmt->execute();
+        if($stmt->affected_rows>0){
+          echo json_encode(["message"=>"User updated successfully"]);
         }else{
-            echo json_encode(["message"=>"User not updated"]);
+           echo json_encode(["message"=>"User not updated"]);
         }
+        $stmt->close();
         break;
+
+        // Sample JSON data to be sent in the body of the request
+        // http://localhost/PHP_API/api.php?id=5
+
+        // {
+        //     "name": "Write for GeeksforGeeks",
+        //     "email": "geeksforgeeks@geeksforgeeks.com",
+        //     "age": 26
+        // }
 
 
     case 'DELETE':
         $id  =  $_GET['id'];
-        $connection->query("DELETE FROM users WHERE id = $id");
-        if($connection->affected_rows > 0){
-            echo json_encode(["message"=>"User deleted successfully"]);
+        $stmt = $connection->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->bind_param("i",$id);
+        $stmt->execute();
+        if($stmt->affected_rows >0){
+           echo json_encode(["message"=>"user deleted successfully"]);
         }else{
-            echo json_encode(["message"=>"User not deleted"]);
+              echo json_encode(["message"=>"user not deleted"]);
         }
+        $stmt->close();
         break;
+
+        // Sample JSON data to be sent in the body of the request
+        // http://localhost/PHP_API/api.php?id=5
 
     
     default:

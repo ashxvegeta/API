@@ -38,9 +38,31 @@ switch ($method) {
 
 
     case 'POST':
-        $name = $input['name'];
-        $email = $input['email'];
+        $name = trim($input['name']);
+        $email = trim($input['email']);
         $age = $input['age'];
+
+        $errors = [];
+        if(empty($name)){
+            $errors[]= "Name is required";
+        }
+        if(empty($email)){
+            $errors[]= "Email is required";
+        }
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+            $errors[]= "Email is not valid";
+        }
+        if(empty($age)){
+            $errors[]= "Age is required";
+        }
+        if(!is_numeric($age)){
+            $errors[]= "Age must be a number";
+        }
+        if(!empty($errors)){
+            echo json_encode(["message"=>"Validation error","errors"=>$errors]);
+            exit;
+        }
+
         $stmt = $connection->prepare("INSERT INTO users(name,email,age) VALUES(?,?,?)");
         $stmt->bind_param("ssi",$name,$email,$age);
         $stmt->execute();
@@ -65,6 +87,40 @@ switch ($method) {
         $name = $input['name'];
         $email = $input['email'];
         $age = $input['age'];
+
+        $errors = [];
+        if(empty($id)){
+          $errors[] = "ID is required";
+        }
+        if (empty($name)) {
+            $errors[] = "Name is required";
+        }
+
+        if(empty($email)){
+            $errors[] = "Email is required";
+
+        }
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+           $errors[] = "Email is not valid";
+        }
+        if(empty($age)){
+          $errors[] = "Age is required";
+        }
+        if(!is_numeric($age)){
+           $errors[] = "Age must be a number";
+        }
+
+        if(!empty($errors)){
+            echo json_encode(["message"=>"Validation error","errors"=>$errors]);
+            exit;
+        }
+
+        if(!empty($errors)){
+           echo json_encode(["message"=>"Validation erros","errors"=>$errors]);
+            exit;
+        }
+        
+
         $stmt = $connection->prepare("UPDATE users set name=?,email=?,age=? WHERE id = ?");
         $stmt->bind_param("ssii",$name,$email,$age,$id);
         $stmt->execute();

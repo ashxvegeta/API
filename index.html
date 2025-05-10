@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PHP API Client</title>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 5px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+    .fa{
+      cursor: pointer;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <h1>Users List</h1>
+
+  <table id="usersTable"></table>
+  <h2>Add users</h2>
+  <input type="hidden" id="userId" />
+  <input type="text" name="name"  id= "name" placeholder="Name">
+  <input type="text" name="email" id= "email"  placeholder="Email">
+  <input type="number" name="age" id= "age"  placeholder="Age">
+  <button  id="submitBtn" onclick="addusers()">Submit</button>
+
+
+
+  <script>
+    const API_URL = 'http://localhost/PHP_API/api.php';
+
+    function getUsers() {
+      fetch(API_URL)
+      .then(res=>res.json())
+      .then(data=>{
+        const table = document.getElementById("usersTable");
+        table.innerHTML="<tr><th>ID</th><th>Name</th><th>Email</th><th>Age</th><th>Action</th></tr>"
+        data.forEach(user=>{
+          if(user.status==1){
+            var status = "Active";
+          }else{
+            var status = "Inctive";
+          }
+          table.innerHTML += `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.age}</td>
+            <td>
+               <button onclick="editUser(${user.id}, '${user.name}', '${user.email}', ${user.age})">Edit</button>
+               <button onclick="deleteUser(${user.id})">Delete</button>
+               <button onclick="toggleStatus(${user.id})">${status}</button>
+               <i style="font-size:24px;pointer;color:${user.likes==1?'red':'black'}"  data-id="${user.id}" class="fa" onclick="likeunlike(${user.id})">&#xf004;</i>
+              </td>
+          </tr>
+        `;
+
+        });
+      });
+    }
+
+    function toggleStatus(id){
+      fetch(`${API_URL}?action=toggleStatus&id=${id}`,{method:'POST'})
+      .then(res=>res.json())
+      .then(responce=>{
+        alert(responce.message);
+        getUsers();
+      });
+    }
+
+    function likeunlike(id) {
+  fetch(`${API_URL}?action=likeunlike&id=${id}`, {method: 'POST' })
+  .then(res => res.json())
+  .then(response => {
+    if(response.status==1){
+      document.querySelector(`.fa[data-id="${id}"]`).style.color = "red";
+
+    }else{
+      document.querySelector(`.fa[data-id="${id}"]`).style.color = "black";
+
+    }
+   
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert("An error occurred while liking/unliking.");
+  });
+}
+
+
+
+
+    function addusers(){
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const age = document.getElementById("age").value;
+      const id = document.getElementById("userId").value;
+     
+      const method  = id ?'PUT':'POST';
+      const url = id ? `${API_URL}?id=${id}` : API_URL;
+
+
+      fetch(url,{
+        method:method ,
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,email,age})
+      })
+      .then(res=>res.json())
+      .then(responce=>{
+        alert(responce.message);
+        getUsers();
+        resetForm();
+        
+      });
+    }
+
+    
+
+    function resetForm() {
+      document.getElementById("name").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("age").value = "";
+      document.getElementById("submitBtn").innerText = "Add User";
+      editingUserId = null;
+    }
+
+   
+
+    function deleteUser(id){
+      fetch(`${API_URL}?id=${id}`,{method:'DELETE'})
+      .then(res=>res.json())
+      .then(responce=>{
+        alert(responce.message);
+        getUsers();
+      });
+    }
+
+
+    let editingUserId = null;
+    function editUser(id,name,email,age){
+      document.getElementById("userId").value = id;
+          document.getElementById("name").value = name;
+          document.getElementById("email").value = email;
+          document.getElementById("age").value = age;
+          editingUserId = id;
+          document.getElementById("submitBtn").innerText = "Update";
+
+    }
+   
+    getUsers();
+  </script>
+</body>
+</html>

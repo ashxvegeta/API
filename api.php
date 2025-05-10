@@ -4,6 +4,63 @@ header('Content-Type: application/json; charset=utf-8');
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 
+$action = isset($_GET['action']) ? $_GET['action'] : null;
+
+if ($action === 'toggleStatus' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+
+    $result = $connection->query("SELECT status FROM users WHERE id = $id");
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $newStatus = $row['status'] == 1 ? 0 : 1;
+
+        $update = $connection->query("UPDATE users SET status = $newStatus WHERE id = $id");
+
+        if ($update) {
+            http_response_code(200);
+            echo json_encode([
+                "message" => "Status updated successfully",
+                "new_status" => $newStatus
+            ]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["message" => "Failed to update status"]);
+        }
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "User not found"]);
+    }
+
+    exit;
+}
+
+
+if ($action === 'likeunlike' && isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+
+    $result = $connection->query("SELECT likes FROM users WHERE id = $id");
+
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $status = $row['likes'] == 1 ? 0 : 1;
+
+        $update = $connection->query("UPDATE users SET likes = $status WHERE id = $id");
+
+        if ($update) {
+            http_response_code(200);
+            echo json_encode(["message" => "Status updated", "status" => $status]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["message" => "Failed to update status"]);
+        }
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "Invalid ID"]);
+    }
+    exit;
+}
+
+
 
 
 switch ($method) {
